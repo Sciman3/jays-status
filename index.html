@@ -200,6 +200,7 @@
       font-size: 11px;
       color: var(--yes);
       margin-top: 4px;
+      margin-bottom: 10px;
     }
 
     .status-label {
@@ -354,10 +355,9 @@
       big.className = 'big-answer big-no';
       big.textContent = 'NO';
       const inningTxt = data.inning ? `${data.inningHalf} ${data.inning}` : '';
-      const scoreHtml = scoreVisible
-        ? renderScoreBlock(data.score) + (inningTxt ? `<div class="inning-line">${inningTxt}</div>` : '')
-        : revealBtn();
-      detail.innerHTML = `<div>${scoreHtml}</div>`;
+      const inningHtml = inningTxt ? `<div class="inning-line">${inningTxt}</div>` : '';
+      const scoreHtml = scoreVisible ? renderScoreBlock(data.score) : revealBtn();
+      detail.innerHTML = `${inningHtml}<div>${scoreHtml}</div>`;
 
     } else if (data.status === 'final') {
       big.className = 'big-answer big-yes';
