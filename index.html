@@ -3,21 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Jays Game Status</title>
+  <title>MLB Game Status</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg:       #0d0f12;
-      --surface:  #161a20;
-      --border:   #2a2f38;
-      --text:     #e8eaf0;
-      --muted:    #6b7280;
-      --yes:      #1db876;
-      --no:       #e24b4a;
-      --soon:     #d4902a;
+      --bg:      #0d0f12;
+      --surface: #161a20;
+      --border:  #2a2f38;
+      --text:    #e8eaf0;
+      --muted:   #6b7280;
+      --sub:     #9ca3af;
+      --yes:     #1db876;
+      --no:      #e24b4a;
+      --soon:    #d4902a;
     }
 
     body {
@@ -31,6 +32,7 @@
       padding: 2rem 1rem;
     }
 
+    /* ── Card ── */
     .card {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -40,7 +42,15 @@
       max-width: 420px;
     }
 
-    .card-header { margin-bottom: 1.5rem; }
+    /* ── Header ── */
+    .card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 1.5rem;
+    }
+
+    .header-left { display: flex; flex-direction: column; gap: 0; }
 
     .wordmark {
       font-family: 'Bebas Neue', sans-serif;
@@ -59,12 +69,31 @@
     }
 
     .question-note {
-      font-size: 11px;
-      color: var(--muted);
-      margin-top: 5px;
+      font-size: 13px;
+      color: var(--sub);
+      margin-top: 7px;
       font-style: italic;
+      letter-spacing: 0.2px;
     }
 
+    /* ── Settings button ── */
+    .settings-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 6px;
+      cursor: pointer;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s, color 0.15s;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .settings-btn:hover { background: #1e2229; color: var(--text); }
+
+    /* ── Big answer ── */
     .big-answer {
       font-family: 'Bebas Neue', sans-serif;
       font-size: 88px;
@@ -77,6 +106,7 @@
     .big-soon { color: var(--soon); font-size: 60px; }
     .big-load { color: var(--muted); font-size: 40px; }
 
+    /* ── Matchup callout ── */
     .matchup-callout {
       display: flex;
       align-items: center;
@@ -87,7 +117,6 @@
       padding: 12px 16px;
       margin-bottom: 1.25rem;
     }
-
     .team-block {
       display: flex;
       flex-direction: column;
@@ -95,38 +124,11 @@
       gap: 5px;
       flex: 1;
     }
-
-    .team-logo {
-      width: 48px;
-      height: 48px;
-      object-fit: contain;
-    }
-
-    .team-abbr {
-      font-size: 11px;
-      font-weight: 500;
-      color: var(--muted);
-      letter-spacing: 1px;
-    }
-
-    .at-sep {
-      font-size: 13px;
-      color: var(--muted);
-      flex-shrink: 0;
-    }
-
-    .game-meta {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .game-meta-time {
-      font-size: 11px;
-      color: var(--muted);
-      text-align: center;
-    }
+    .team-logo { width: 48px; height: 48px; object-fit: contain; }
+    .team-abbr { font-size: 11px; font-weight: 500; color: var(--muted); letter-spacing: 1px; }
+    .at-sep    { font-size: 13px; color: var(--muted); flex-shrink: 0; }
+    .game-meta { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+    .game-meta-time { font-size: 11px; color: var(--muted); text-align: center; }
 
     .live-pip {
       display: inline-flex;
@@ -141,16 +143,10 @@
       background: var(--yes);
       animation: pulse 1.4s ease-in-out infinite;
     }
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50%       { opacity: 0.25; }
-    }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.25} }
 
-    .divider {
-      border: none;
-      border-top: 1px solid var(--border);
-      margin: 1.25rem 0;
-    }
+    /* ── Divider / detail ── */
+    .divider { border: none; border-top: 1px solid var(--border); margin: 1.25rem 0; }
 
     .reveal-btn {
       display: inline-flex;
@@ -174,40 +170,16 @@
       justify-content: space-between;
       padding: 4px 0;
     }
-    .score-team {
-      font-size: 12px;
-      font-weight: 500;
-      color: var(--muted);
-      min-width: 40px;
-    }
-    .score-pts {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 42px;
-      line-height: 1;
-    }
+    .score-team { font-size: 12px; font-weight: 500; color: var(--muted); min-width: 40px; }
+    .score-pts  { font-family: 'Bebas Neue', sans-serif; font-size: 42px; line-height: 1; }
     .score-pts.win  { color: var(--yes); }
     .score-pts.loss { color: var(--no); }
     .score-pts.tie  { color: var(--text); }
     .score-sep { font-size: 14px; color: var(--border); }
 
-    .outcome-line {
-      font-size: 11px;
-      color: var(--muted);
-      margin-top: 6px;
-    }
-
-    .inning-line {
-      font-size: 11px;
-      color: var(--yes);
-      margin-top: 4px;
-      margin-bottom: 10px;
-    }
-
-    .status-label {
-      font-size: 11px;
-      color: var(--muted);
-      margin-bottom: 0.75rem;
-    }
+    .outcome-line { font-size: 11px; color: var(--muted); margin-top: 6px; }
+    .inning-line  { font-size: 11px; color: var(--yes); margin-top: 4px; margin-bottom: 10px; }
+    .status-label { font-size: 11px; color: var(--muted); margin-bottom: 0.75rem; }
 
     .meta-row {
       display: flex;
@@ -228,8 +200,8 @@
       color: var(--muted);
       transition: background 0.15s, color 0.15s;
     }
-    .refresh-btn:hover { background: #1e2229; color: var(--text); }
-    .refresh-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .refresh-btn:hover   { background: #1e2229; color: var(--text); }
+    .refresh-btn:disabled{ opacity: 0.4; cursor: not-allowed; }
 
     .err-text { font-size: 11px; color: var(--no); margin-top: 8px; }
 
@@ -243,23 +215,120 @@
       vertical-align: middle;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Modal ── */
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.65);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    .modal-backdrop.open { display: flex; }
+
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      width: 100%;
+      max-width: 400px;
+      max-height: 80vh;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .modal-title {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+      letter-spacing: 0.5px;
+    }
+    .modal-close {
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      color: var(--muted);
+      font-size: 18px;
+      line-height: 1;
+      padding: 2px 6px;
+      border-radius: 4px;
+      transition: color 0.15s;
+    }
+    .modal-close:hover { color: var(--text); }
+
+    .modal-search {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+      background: #1b2029;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 8px 12px;
+      color: var(--text);
+      width: 100%;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .modal-search::placeholder { color: var(--muted); }
+    .modal-search:focus { border-color: var(--sub); }
+
+    .team-list {
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      flex: 1;
+    }
+
+    .team-option {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      border-radius: 7px;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: background 0.1s, border-color 0.1s;
+    }
+    .team-option:hover { background: #1b2029; }
+    .team-option.selected {
+      background: #1b2029;
+      border-color: var(--sub);
+    }
+    .team-option img { width: 28px; height: 28px; object-fit: contain; flex-shrink: 0; }
+    .team-option-name { font-size: 12px; color: var(--text); }
+    .team-option-abbr { font-size: 10px; color: var(--muted); margin-left: auto; letter-spacing: 1px; }
   </style>
 </head>
 <body>
 
 <div class="card">
   <div class="card-header">
-    <div class="wordmark">Blue Jays</div>
-    <div class="eyebrow">Game status</div>
-    <div class="question-note">Is today's game done?</div>
+    <div class="header-left">
+      <div class="wordmark" id="wordmark">Blue Jays</div>
+      <div class="eyebrow">Game status</div>
+      <div class="question-note" id="questionNote">Is today's game done?</div>
+    </div>
+    <button class="settings-btn" id="settingsBtn" aria-label="Settings">
+      <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="10" cy="10" r="2.5" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M10 2v2M10 16v2M2 10h2M16 10h2M4.22 4.22l1.42 1.42M14.36 14.36l1.42 1.42M4.22 15.78l1.42-1.42M14.36 5.64l1.42-1.42" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+    </button>
   </div>
 
   <div class="big-answer big-load" id="big"><span class="spinner"></span></div>
-
   <div id="matchup-area"></div>
-
   <hr class="divider">
-
   <div id="detail" style="min-height: 40px;"></div>
 
   <div class="meta-row">
@@ -268,13 +337,63 @@
   </div>
 </div>
 
+<!-- Settings modal -->
+<div class="modal-backdrop" id="modalBackdrop">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Select team</span>
+      <button class="modal-close" id="modalClose">✕</button>
+    </div>
+    <input class="modal-search" id="teamSearch" placeholder="Search teams..." autocomplete="off">
+    <div class="team-list" id="teamList"></div>
+  </div>
+</div>
+
 <script>
-  const TOR_ID = 141;
-  const BASE   = 'https://statsapi.mlb.com/api/v1';
-  const LOGO   = id => `https://www.mlbstatic.com/team-logos/${id}.svg`;
+  // ── All 30 MLB teams ──────────────────────────────────────────────
+  const TEAMS = [
+    { id: 109, abbr: 'ARI', name: 'Arizona Diamondbacks' },
+    { id: 144, abbr: 'ATL', name: 'Atlanta Braves' },
+    { id: 110, abbr: 'BAL', name: 'Baltimore Orioles' },
+    { id: 111, abbr: 'BOS', name: 'Boston Red Sox' },
+    { id: 112, abbr: 'CHC', name: 'Chicago Cubs' },
+    { id: 145, abbr: 'CWS', name: 'Chicago White Sox' },
+    { id: 113, abbr: 'CIN', name: 'Cincinnati Reds' },
+    { id: 114, abbr: 'CLE', name: 'Cleveland Guardians' },
+    { id: 115, abbr: 'COL', name: 'Colorado Rockies' },
+    { id: 116, abbr: 'DET', name: 'Detroit Tigers' },
+    { id: 117, abbr: 'HOU', name: 'Houston Astros' },
+    { id: 118, abbr: 'KC',  name: 'Kansas City Royals' },
+    { id: 108, abbr: 'LAA', name: 'Los Angeles Angels' },
+    { id: 119, abbr: 'LAD', name: 'Los Angeles Dodgers' },
+    { id: 146, abbr: 'MIA', name: 'Miami Marlins' },
+    { id: 158, abbr: 'MIL', name: 'Milwaukee Brewers' },
+    { id: 142, abbr: 'MIN', name: 'Minnesota Twins' },
+    { id: 121, abbr: 'NYM', name: 'New York Mets' },
+    { id: 147, abbr: 'NYY', name: 'New York Yankees' },
+    { id: 133, abbr: 'OAK', name: 'Oakland Athletics' },
+    { id: 143, abbr: 'PHI', name: 'Philadelphia Phillies' },
+    { id: 134, abbr: 'PIT', name: 'Pittsburgh Pirates' },
+    { id: 135, abbr: 'SD',  name: 'San Diego Padres' },
+    { id: 137, abbr: 'SF',  name: 'San Francisco Giants' },
+    { id: 136, abbr: 'SEA', name: 'Seattle Mariners' },
+    { id: 138, abbr: 'STL', name: 'St. Louis Cardinals' },
+    { id: 139, abbr: 'TB',  name: 'Tampa Bay Rays' },
+    { id: 140, abbr: 'TEX', name: 'Texas Rangers' },
+    { id: 141, abbr: 'TOR', name: 'Toronto Blue Jays' },
+    { id: 120, abbr: 'WSH', name: 'Washington Nationals' },
+  ];
+
+  const BASE = 'https://statsapi.mlb.com/api/v1';
+  const LOGO = id => `https://www.mlbstatic.com/team-logos/${id}.svg`;
+  const STORAGE_KEY = 'mlb_status_team_id';
 
   let scoreVisible = false;
-  let state = null;
+  let currentState = null;
+  let selectedTeamId = parseInt(localStorage.getItem(STORAGE_KEY)) || 141;
+
+  // ── Helpers ───────────────────────────────────────────────────────
+  function getTeam(id) { return TEAMS.find(t => t.id === id) || TEAMS.find(t => t.id === 141); }
 
   function today() {
     const d = new Date();
@@ -285,6 +404,15 @@
     return new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
   }
 
+  function updateHeader() {
+    const team = getTeam(selectedTeamId);
+    document.getElementById('wordmark').textContent = team.name.replace(/^(.*)\s(\S+)$/, '$2'); // last word
+    document.getElementById('wordmark').textContent = team.name;
+    document.getElementById('questionNote').textContent = `Is today's ${team.abbr} game done?`;
+    document.title = `${team.abbr} Game Status`;
+  }
+
+  // ── Render helpers ────────────────────────────────────────────────
   function revealBtn() {
     return `<button class="reveal-btn" id="revealBtn">
       <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
@@ -295,34 +423,32 @@
     </button>`;
   }
 
-  function renderScoreBlock(s) {
+  function renderScoreBlock(s, teamAbbr) {
     if (!s) return '';
-    const { torPts, oppPts, oppAbbr } = s;
-    const torWin = torPts > oppPts, oppWin = oppPts > torPts;
+    const { myPts, oppPts, oppAbbr } = s;
+    const myWin  = myPts > oppPts;
+    const oppWin = oppPts > myPts;
     return `<div class="score-row">
-      <span class="score-team">TOR</span>
-      <span class="score-pts ${torWin?'win':oppWin?'loss':'tie'}">${torPts}</span>
+      <span class="score-team">${teamAbbr}</span>
+      <span class="score-pts ${myWin?'win':oppWin?'loss':'tie'}">${myPts}</span>
       <span class="score-sep">—</span>
-      <span class="score-pts ${oppWin?'win':torWin?'loss':'tie'}">${oppPts}</span>
+      <span class="score-pts ${oppWin?'win':myWin?'loss':'tie'}">${oppPts}</span>
       <span class="score-team" style="text-align:right">${oppAbbr}</span>
     </div>`;
   }
 
   function renderMatchup(data) {
     if (!data.homeId) return '';
-
     const liveIndicator = data.status === 'live'
       ? `<div class="live-pip"><span class="live-dot"></span>In progress</div>` : '';
-
     let timeStr = data.gameTime || '';
     if (data.status === 'upcoming' && data.startTimeUTC) {
       const start = new Date(data.startTimeUTC);
       const mins  = Math.round((start - Date.now()) / 60000);
-      const h = Math.floor(Math.abs(mins) / 60), m = Math.abs(mins) % 60;
+      const h = Math.floor(Math.abs(mins)/60), m = Math.abs(mins)%60;
       const cd = mins > 0 ? (h > 0 ? `${h}h ${m}m away` : `${m}m away`) : 'Starting soon';
       timeStr = `${data.gameTime} · ${cd}`;
     }
-
     return `<div class="matchup-callout">
       <div class="team-block">
         <img class="team-logo" src="${LOGO(data.awayId)}" alt="${data.awayAbbr}" onerror="this.style.display='none'">
@@ -343,28 +469,30 @@
   }
 
   function render(data) {
-    state = data;
+    currentState = data;
     const big         = document.getElementById('big');
     const detail      = document.getElementById('detail');
     const matchupArea = document.getElementById('matchup-area');
     document.getElementById('updated').textContent = 'Updated ' + nowTime();
-
     matchupArea.innerHTML = renderMatchup(data);
+    updateHeader();
+
+    const team = getTeam(selectedTeamId);
 
     if (data.status === 'live') {
       big.className = 'big-answer big-no';
       big.textContent = 'NO';
-      const inningTxt = data.inning ? `${data.inningHalf} ${data.inning}` : '';
+      const inningTxt  = data.inning ? `${data.inningHalf} ${data.inning}` : '';
       const inningHtml = inningTxt ? `<div class="inning-line">${inningTxt}</div>` : '';
-      const scoreHtml = scoreVisible ? renderScoreBlock(data.score) : revealBtn();
+      const scoreHtml  = scoreVisible ? renderScoreBlock(data.score, team.abbr) : revealBtn();
       detail.innerHTML = `${inningHtml}<div>${scoreHtml}</div>`;
 
     } else if (data.status === 'final') {
       big.className = 'big-answer big-yes';
       big.textContent = 'YES';
-      const won = data.score && data.score.torPts > data.score.oppPts;
+      const won       = data.score && data.score.myPts > data.score.oppPts;
       const scoreHtml = scoreVisible
-        ? renderScoreBlock(data.score) + `<div class="outcome-line">Jays ${won ? 'won' : 'lost'}</div>`
+        ? renderScoreBlock(data.score, team.abbr) + `<div class="outcome-line">${team.abbr} ${won ? 'won' : 'lost'}</div>`
         : revealBtn();
       detail.innerHTML = `<div class="status-label">Game finished</div><div>${scoreHtml}</div>`;
 
@@ -387,22 +515,26 @@
     }
 
     const rb = document.getElementById('revealBtn');
-    if (rb) rb.addEventListener('click', () => { scoreVisible = true; render(state); });
+    if (rb) rb.addEventListener('click', () => { scoreVisible = true; render(currentState); });
   }
 
+  // ── Data loading ──────────────────────────────────────────────────
   async function load() {
     const btn = document.getElementById('refreshBtn');
     btn.disabled = true;
     btn.textContent = '...';
     scoreVisible = false;
 
+    const teamId = selectedTeamId;
+    const team   = getTeam(teamId);
+
     try {
-      const schedRes  = await fetch(`${BASE}/schedule?sportId=1&teamId=${TOR_ID}&date=${today()}&hydrate=linescore,team`);
+      const schedRes  = await fetch(`${BASE}/schedule?sportId=1&teamId=${teamId}&date=${today()}&hydrate=linescore,team`);
       const schedData = await schedRes.json();
       const dates     = schedData.dates || [];
 
       if (!dates.length || !dates[0].games.length) {
-        render({ status: 'none', nextGame: await getNextGame() });
+        render({ status: 'none', nextGame: await getNextGame(teamId) });
         return;
       }
 
@@ -412,38 +544,35 @@
       const detailedState = game.status.detailedState;
       const homeTeam      = game.teams.home.team;
       const awayTeam      = game.teams.away.team;
-      const isTorHome     = homeTeam.id === TOR_ID;
-      const oppTeam       = isTorHome ? awayTeam : homeTeam;
+      const isMyHome      = homeTeam.id === teamId;
+      const oppTeam       = isMyHome ? awayTeam : homeTeam;
       const startUTC      = game.gameDate;
       const localTime     = new Date(startUTC).toLocaleTimeString([], {
         hour: 'numeric', minute: '2-digit', timeZone: 'America/Toronto'
       }) + ' ET';
 
       const base = {
-        homeId:      homeTeam.id,
-        awayId:      awayTeam.id,
-        homeAbbr:    homeTeam.abbreviation,
-        awayAbbr:    awayTeam.abbreviation,
-        gameTime:    localTime,
-        startTimeUTC: startUTC,
+        homeId: homeTeam.id, awayId: awayTeam.id,
+        homeAbbr: homeTeam.abbreviation, awayAbbr: awayTeam.abbreviation,
+        gameTime: localTime, startTimeUTC: startUTC,
       };
 
       if (abstractState === 'Live' || detailedState === 'In Progress') {
-        const ls     = game.linescore || await fetchLinescore(gamePk);
-        const torPts = isTorHome ? (ls.teams?.home?.runs ?? '?') : (ls.teams?.away?.runs ?? '?');
-        const oppPts = isTorHome ? (ls.teams?.away?.runs ?? '?') : (ls.teams?.home?.runs ?? '?');
+        const ls    = game.linescore || await fetchLinescore(gamePk);
+        const myPts  = isMyHome ? (ls.teams?.home?.runs ?? '?') : (ls.teams?.away?.runs ?? '?');
+        const oppPts = isMyHome ? (ls.teams?.away?.runs ?? '?') : (ls.teams?.home?.runs ?? '?');
         render({ ...base, status: 'live',
-          inning:     ls.currentInning ? `Inning ${ls.currentInning}` : '',
+          inning: ls.currentInning ? `Inning ${ls.currentInning}` : '',
           inningHalf: ls.inningHalf || '',
-          score: { torPts, oppPts, oppAbbr: oppTeam.abbreviation }
+          score: { myPts, oppPts, oppAbbr: oppTeam.abbreviation }
         });
 
       } else if (abstractState === 'Final' || detailedState.includes('Final')) {
-        const ls     = game.linescore || await fetchLinescore(gamePk);
-        const torPts = isTorHome ? (ls.teams?.home?.runs ?? '?') : (ls.teams?.away?.runs ?? '?');
-        const oppPts = isTorHome ? (ls.teams?.away?.runs ?? '?') : (ls.teams?.home?.runs ?? '?');
+        const ls    = game.linescore || await fetchLinescore(gamePk);
+        const myPts  = isMyHome ? (ls.teams?.home?.runs ?? '?') : (ls.teams?.away?.runs ?? '?');
+        const oppPts = isMyHome ? (ls.teams?.away?.runs ?? '?') : (ls.teams?.home?.runs ?? '?');
         render({ ...base, status: 'final',
-          score: { torPts, oppPts, oppAbbr: oppTeam.abbreviation }
+          score: { myPts, oppPts, oppAbbr: oppTeam.abbreviation }
         });
 
       } else {
@@ -463,12 +592,12 @@
     return r.json();
   }
 
-  async function getNextGame() {
+  async function getNextGame(teamId) {
     try {
       const future = new Date(); future.setDate(future.getDate() + 1);
       const end    = new Date(); end.setDate(end.getDate() + 14);
       const fmt    = d => d.toISOString().slice(0, 10);
-      const r      = await fetch(`${BASE}/schedule?sportId=1&teamId=${TOR_ID}&startDate=${fmt(future)}&endDate=${fmt(end)}`);
+      const r      = await fetch(`${BASE}/schedule?sportId=1&teamId=${teamId}&startDate=${fmt(future)}&endDate=${fmt(end)}`);
       const d      = await r.json();
       const next   = d.dates?.[0]?.games?.[0];
       if (!next) return null;
@@ -479,6 +608,54 @@
     } catch { return null; }
   }
 
+  // ── Modal / team picker ───────────────────────────────────────────
+  function buildTeamList(filter = '') {
+    const list    = document.getElementById('teamList');
+    const filtered = TEAMS.filter(t =>
+      t.name.toLowerCase().includes(filter.toLowerCase()) ||
+      t.abbr.toLowerCase().includes(filter.toLowerCase())
+    );
+    list.innerHTML = filtered.map(t => `
+      <div class="team-option ${t.id === selectedTeamId ? 'selected' : ''}" data-id="${t.id}">
+        <img src="${LOGO(t.id)}" alt="${t.abbr}" onerror="this.style.display='none'" width="28" height="28">
+        <span class="team-option-name">${t.name}</span>
+        <span class="team-option-abbr">${t.abbr}</span>
+      </div>`).join('');
+
+    list.querySelectorAll('.team-option').forEach(el => {
+      el.addEventListener('click', () => {
+        selectedTeamId = parseInt(el.dataset.id);
+        localStorage.setItem(STORAGE_KEY, selectedTeamId);
+        closeModal();
+        load();
+      });
+    });
+  }
+
+  function openModal()  {
+    document.getElementById('modalBackdrop').classList.add('open');
+    document.getElementById('teamSearch').value = '';
+    buildTeamList();
+    document.getElementById('teamSearch').focus();
+    // Scroll selected into view
+    setTimeout(() => {
+      const sel = document.querySelector('.team-option.selected');
+      if (sel) sel.scrollIntoView({ block: 'center' });
+    }, 50);
+  }
+
+  function closeModal() { document.getElementById('modalBackdrop').classList.remove('open'); }
+
+  document.getElementById('settingsBtn').addEventListener('click', openModal);
+  document.getElementById('modalClose').addEventListener('click', closeModal);
+  document.getElementById('modalBackdrop').addEventListener('click', e => {
+    if (e.target === document.getElementById('modalBackdrop')) closeModal();
+  });
+  document.getElementById('teamSearch').addEventListener('input', e => buildTeamList(e.target.value));
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+  // ── Init ──────────────────────────────────────────────────────────
+  updateHeader();
   load();
   setInterval(load, 60000);
 </script>
