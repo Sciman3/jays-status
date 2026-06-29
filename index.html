@@ -4,6 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MLB Game Status</title>
+  <link rel="manifest" href="./manifest.json">
+  <link rel="apple-touch-icon" href="./icon.svg">
+  <meta name="theme-color" content="#0d0f12">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Game Status">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
@@ -203,6 +209,88 @@
     .refresh-btn:hover   { background: #1e2229; color: var(--text); }
     .refresh-btn:disabled{ opacity: 0.4; cursor: not-allowed; }
 
+    .notif-btn {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      cursor: pointer;
+      padding: 5px 10px;
+      border-radius: 5px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .notif-btn:hover { background: #1e2229; color: var(--text); }
+    .notif-btn.active { border-color: var(--yes); color: var(--yes); }
+    .notif-btn.denied { opacity: 0.4; cursor: not-allowed; }
+
+    .setting-toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 2px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 6px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .setting-toggle-title { font-size: 12px; color: var(--text); }
+    .setting-toggle-sub   { font-size: 10px; color: var(--muted); margin-top: 2px; }
+    .toggle-track {
+      width: 34px; height: 18px;
+      border-radius: 9px;
+      background: var(--border);
+      position: relative;
+      transition: background 0.2s;
+      flex-shrink: 0;
+    }
+    .toggle-track.on { background: var(--yes); }
+    .toggle-knob {
+      position: absolute;
+      top: 2px; left: 2px;
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      background: var(--text);
+      transition: transform 0.2s;
+    }
+    .toggle-track.on .toggle-knob { transform: translateX(16px); }
+
+    .modal-section-label {
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      padding: 2px 2px 6px;
+    }
+
+    .siri-row {
+      display: none;
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border);
+    }
+    .siri-row.visible { display: block; }
+
+    .siri-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      text-decoration: none;
+      padding: 7px 14px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: transparent;
+      transition: background 0.15s, color 0.15s;
+      cursor: pointer;
+    }
+    .siri-btn:hover { background: #1e2229; color: var(--text); }
+
     .err-text { font-size: 11px; color: var(--no); margin-top: 8px; }
 
     .spinner {
@@ -333,7 +421,22 @@
 
   <div class="meta-row">
     <span class="last-updated" id="updated"></span>
-    <button class="refresh-btn" id="refreshBtn" onclick="load()">Refresh ↻</button>
+    <div style="display:flex;gap:6px;align-items:center">
+      <button class="notif-btn" id="notifBtn" title="Enable notifications"></button>
+      <button class="refresh-btn" id="refreshBtn" onclick="load()">Refresh ↻</button>
+    </div>
+  </div>
+
+  <div class="siri-row" id="siriRow">
+    <a class="siri-btn" id="siriBtn" href="#" target="_blank" rel="noopener">
+      <svg width="13" height="13" viewBox="0 0 22 22" fill="none">
+        <circle cx="11" cy="11" r="10" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M7 11c0-1.1.4-2 1.2-2.7A3.8 3.8 0 0 1 11 7.5c1 0 1.9.3 2.6.9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M15 11c0 1.1-.4 2-1.2 2.7A3.8 3.8 0 0 1 11 14.5c-1 0-1.9-.3-2.6-.9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        <circle cx="11" cy="11" r="1.5" fill="currentColor"/>
+      </svg>
+      Add to Siri Shortcuts
+    </a>
   </div>
 </div>
 
@@ -341,15 +444,44 @@
 <div class="modal-backdrop" id="modalBackdrop">
   <div class="modal">
     <div class="modal-header">
-      <span class="modal-title">Select team</span>
+      <span class="modal-title">Settings</span>
       <button class="modal-close" id="modalClose">✕</button>
     </div>
+
+    <div class="setting-toggle-row" id="showScoresRow">
+      <div>
+        <div class="setting-toggle-title">Show scores</div>
+        <div class="setting-toggle-sub">Reveal scores on the page and in notifications</div>
+      </div>
+      <div class="toggle-track" id="showScoresTrack"><div class="toggle-knob"></div></div>
+    </div>
+
+    <div class="modal-section-label">Team</div>
     <input class="modal-search" id="teamSearch" placeholder="Search teams..." autocomplete="off">
     <div class="team-list" id="teamList"></div>
   </div>
 </div>
 
 <script>
+  // ── Service worker registration ───────────────────────────────────
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  }
+
+  // ── Siri Shortcut link ────────────────────────────────────────────
+  // Replace this URL with your iCloud sharing link after creating the
+  // shortcut in the Shortcuts app (Share → Copy iCloud Link).
+  const SHORTCUT_ICLOUD_URL = '';
+
+  (function initSiriBtn() {
+    const isApple = /iPhone|iPad|iPod|Macintosh/.test(navigator.userAgent);
+    if (!isApple || !SHORTCUT_ICLOUD_URL) return;
+    const row = document.getElementById('siriRow');
+    const btn = document.getElementById('siriBtn');
+    btn.href = SHORTCUT_ICLOUD_URL;
+    row.classList.add('visible');
+  })();
+
   // ── All 30 MLB teams ──────────────────────────────────────────────
   const TEAMS = [
     { id: 109, abbr: 'ARI', name: 'Arizona Diamondbacks' },
@@ -391,6 +523,9 @@
   let scoreVisible = false;
   let currentState = null;
   let selectedTeamId = parseInt(localStorage.getItem(STORAGE_KEY)) || 141;
+  let previousStatus = null;
+  let previousTeamId = null;
+  let previousDate   = null;
 
   // ── Helpers ───────────────────────────────────────────────────────
   function getTeam(id) { return TEAMS.find(t => t.id === id) || TEAMS.find(t => t.id === 141); }
@@ -411,6 +546,84 @@
     document.getElementById('questionNote').textContent = `Is today's ${team.abbr} game done?`;
     document.title = `${team.abbr} Game Status`;
   }
+
+  // ── Notifications ─────────────────────────────────────────────────
+  function updateNotifBtn() {
+    const btn = document.getElementById('notifBtn');
+    if (!('Notification' in window)) { btn.style.display = 'none'; return; }
+    const p = Notification.permission;
+    if (p === 'granted') {
+      btn.innerHTML = `<svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a6 6 0 00-6 6v3.5L2.5 13A1 1 0 003 15h14a1 1 0 00.5-1.87L16 11.5V8a6 6 0 00-6-6zm0 16a2 2 0 01-2-2h4a2 2 0 01-2 2z"/></svg> On`;
+      btn.classList.add('active');
+      btn.classList.remove('denied');
+      btn.disabled = false;
+      btn.title = 'Notifications on — click to turn off';
+      btn.onclick = () => { localStorage.setItem('mlb_notif_off', '1'); updateNotifBtn(); };
+    } else if (p === 'denied') {
+      btn.innerHTML = `<svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a6 6 0 00-6 6v3.5L2.5 13A1 1 0 003 15h14a1 1 0 00.5-1.87L16 11.5V8a6 6 0 00-6-6zm0 16a2 2 0 01-2-2h4a2 2 0 01-2 2z"/></svg> Blocked`;
+      btn.classList.add('denied');
+      btn.classList.remove('active');
+      btn.disabled = true;
+      btn.title = 'Notifications blocked — enable in browser settings';
+      btn.onclick = null;
+    } else {
+      const userOff = localStorage.getItem('mlb_notif_off');
+      btn.innerHTML = `<svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a6 6 0 00-6 6v3.5L2.5 13A1 1 0 003 15h14a1 1 0 00.5-1.87L16 11.5V8a6 6 0 00-6-6zm0 16a2 2 0 01-2-2h4a2 2 0 01-2 2z"/></svg> ${userOff ? 'Off' : 'Notify'}`;
+      btn.classList.remove('active', 'denied');
+      btn.disabled = false;
+      btn.title = 'Get notified when game status changes';
+      btn.onclick = async () => {
+        localStorage.removeItem('mlb_notif_off');
+        const result = await Notification.requestPermission();
+        updateNotifBtn();
+        if (result === 'granted') sendNotif('Notifications enabled', 'You\'ll be alerted when game status changes.');
+      };
+    }
+  }
+
+  function canNotify() {
+    return 'Notification' in window &&
+           Notification.permission === 'granted' &&
+           !localStorage.getItem('mlb_notif_off');
+  }
+
+  function sendNotif(title, body, icon) {
+    if (!canNotify()) return;
+    const n = new Notification(title, {
+      body,
+      icon: icon || './icon.svg',
+      badge: './icon.svg',
+      tag: 'mlb-status',
+      renotify: true,
+    });
+    n.onclick = () => { window.focus(); n.close(); };
+  }
+
+  function checkStatusChange(newData) {
+    const dateStr = today();
+    const sameTeam = previousTeamId === selectedTeamId;
+    const sameDay  = previousDate === dateStr;
+    const hadPrev  = previousStatus !== null && sameTeam && sameDay;
+
+    if (hadPrev && previousStatus !== newData.status) {
+      const team = getTeam(selectedTeamId);
+      if (newData.status === 'live') {
+        sendNotif(`${team.name} game started`, 'Game is now in progress.');
+      } else if (newData.status === 'final') {
+        const body = (showScores() && newData.score)
+          ? (() => { const w = newData.score.myPts > newData.score.oppPts; return `Final: ${team.abbr} ${newData.score.myPts}–${newData.score.oppPts} ${newData.score.oppAbbr}. ${team.abbr} ${w ? 'won' : 'lost'}.`; })()
+          : 'Game over.';
+        sendNotif(`${team.name} game over`, body);
+      }
+    }
+
+    previousStatus = newData.status;
+    previousTeamId = selectedTeamId;
+    previousDate   = dateStr;
+  }
+
+  function showScores() { return localStorage.getItem('mlb_show_scores') === '1'; }
+  function scoresUnlocked() { return showScores() || scoreVisible; }
 
   // ── Render helpers ────────────────────────────────────────────────
   function revealBtn() {
@@ -469,6 +682,7 @@
   }
 
   function render(data) {
+    checkStatusChange(data);
     currentState = data;
     const big         = document.getElementById('big');
     const detail      = document.getElementById('detail');
@@ -484,14 +698,14 @@
       big.textContent = 'NO';
       const inningTxt  = data.inning ? `${data.inningHalf} ${data.inning}` : '';
       const inningHtml = inningTxt ? `<div class="inning-line">${inningTxt}</div>` : '';
-      const scoreHtml  = scoreVisible ? renderScoreBlock(data.score, team.abbr) : revealBtn();
+      const scoreHtml  = scoresUnlocked() ? renderScoreBlock(data.score, team.abbr) : revealBtn();
       detail.innerHTML = `${inningHtml}<div>${scoreHtml}</div>`;
 
     } else if (data.status === 'final') {
       big.className = 'big-answer big-yes';
       big.textContent = 'YES';
-      const won       = data.score && data.score.myPts > data.score.oppPts;
-      const scoreHtml = scoreVisible
+      const won = data.score && data.score.myPts > data.score.oppPts;
+      const scoreHtml = scoresUnlocked()
         ? renderScoreBlock(data.score, team.abbr) + `<div class="outcome-line">${team.abbr} ${won ? 'won' : 'lost'}</div>`
         : revealBtn();
       detail.innerHTML = `<div class="status-label">Game finished</div><div>${scoreHtml}</div>`;
@@ -626,6 +840,7 @@
       el.addEventListener('click', () => {
         selectedTeamId = parseInt(el.dataset.id);
         localStorage.setItem(STORAGE_KEY, selectedTeamId);
+        previousStatus = null; // don't notify on team switch
         closeModal();
         load();
       });
@@ -634,6 +849,7 @@
 
   function openModal()  {
     document.getElementById('modalBackdrop').classList.add('open');
+    document.getElementById('showScoresTrack').classList.toggle('on', showScores());
     document.getElementById('teamSearch').value = '';
     buildTeamList();
     document.getElementById('teamSearch').focus();
@@ -646,6 +862,13 @@
 
   function closeModal() { document.getElementById('modalBackdrop').classList.remove('open'); }
 
+  document.getElementById('showScoresRow').addEventListener('click', () => {
+    const next = !showScores();
+    localStorage.setItem('mlb_show_scores', next ? '1' : '0');
+    document.getElementById('showScoresTrack').classList.toggle('on', next);
+    if (currentState) render(currentState);
+  });
+
   document.getElementById('settingsBtn').addEventListener('click', openModal);
   document.getElementById('modalClose').addEventListener('click', closeModal);
   document.getElementById('modalBackdrop').addEventListener('click', e => {
@@ -656,6 +879,7 @@
 
   // ── Init ──────────────────────────────────────────────────────────
   updateHeader();
+  updateNotifBtn();
   load();
   setInterval(load, 60000);
 </script>
